@@ -22,6 +22,7 @@ fn main() {
     let mut opts = Options::new();
     opts.optopt("", "outd", "set output directory (defaults to current dir)", "PATH");
     opts.optopt("", "outf", "set output file name (defaults to test-results.xml)", "NAME");
+    opts.optopt("", "args", "pass in custom parameters to append to 'cargo test'", "ARGS");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => { m }
@@ -42,10 +43,18 @@ fn main() {
     filepath.push_str("/");
     filepath.push_str(&outf_name);
 
+    let mut test_cmd = vec!["test"];
+    let test_args = matches.opt_str("args").unwrap_or("".to_owned());
+    if !test_args.is_empty() {
+      let test_args_vec = test_args.split(" ").collect::<Vec<&str>>();
+      test_cmd.extend(test_args_vec);
+    }
+
     println!("Running tests");
+    println!("cargo command: {:?}", test_cmd);
 
     let output = Command::new("cargo")
-        .arg("test")
+        .args(test_cmd)
         .output()
         .expect("failed to execute command");
 
