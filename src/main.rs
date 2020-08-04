@@ -1,32 +1,45 @@
-extern crate sxd_document;
 extern crate getopts;
+extern crate sxd_document;
 
 mod element;
 mod parser;
 
-use std::fs::File;
-use std::process::Command;
-use sxd_document::Package;
-use sxd_document::writer::format_document;
 use getopts::Options;
 use std::env;
 use std::fs::DirBuilder;
-
+use std::fs::File;
+use std::process::Command;
+use sxd_document::writer::format_document;
+use sxd_document::Package;
 
 fn main() {
-
     // Read args and prepare vars
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optopt("", "outd", "set output directory (defaults to current dir)", "PATH");
-    opts.optopt("", "outf", "set output file name (defaults to test-results.xml)", "NAME");
-    opts.optopt("", "args", "pass in custom parameters to append to 'cargo test'", "ARGS");
+    opts.optopt(
+        "",
+        "outd",
+        "set output directory (defaults to current dir)",
+        "PATH",
+    );
+    opts.optopt(
+        "",
+        "outf",
+        "set output file name (defaults to test-results.xml)",
+        "NAME",
+    );
+    opts.optopt(
+        "",
+        "args",
+        "pass in custom parameters to append to 'cargo test'",
+        "ARGS",
+    );
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m }
-        Err(f) => { panic!(f.to_string()) }
+        Ok(m) => m,
+        Err(f) => panic!(f.to_string()),
     };
     if matches.opt_present("h") {
         print_usage(&program, opts);
@@ -46,8 +59,8 @@ fn main() {
     let mut test_cmd = vec!["test"];
     let test_args = matches.opt_str("args").unwrap_or("".to_owned());
     if !test_args.is_empty() {
-      let test_args_vec = test_args.split(" ").collect::<Vec<&str>>();
-      test_cmd.extend(test_args_vec);
+        let test_args_vec = test_args.split(" ").collect::<Vec<&str>>();
+        test_cmd.extend(test_args_vec);
     }
 
     println!("Running tests");
@@ -75,9 +88,7 @@ fn main() {
 
     println!("Writing report");
 
-    DirBuilder::new()
-        .recursive(true)
-        .create(outd_path).unwrap();
+    DirBuilder::new().recursive(true).create(outd_path).unwrap();
     let mut f = File::create(&filepath).unwrap();
 
     format_document(&document, &mut f)
